@@ -1,0 +1,3 @@
+[submodule "MaterialX"]
+	path = MaterialX
+	url = git@github.com:AcademySoftwareFoundation/MaterialX.git
