@@ -1,6 +1,6 @@
 OpenShadingLanguage 1.00
 # Compiled by oslc 1.11.14
-# options: -o /var/folders/s1/hz_4k9v51r3fwc5qgfn7s74r0000gn/T/tmp295qc7ll.oso -I/Applications/Blender.app/Contents/Resources/3.0/scripts/addons/cycles/shader
+# options: -o /var/folders/s1/hz_4k9v51r3fwc5qgfn7s74r0000gn/T/tmpu2pxri9n.oso -I/Applications/Blender.app/Contents/Resources/3.0/scripts/addons/cycles/shader
 surface SR_gold	%meta{string,mtlx_category,"standard_surface"} %meta{string,mtlx_name,"SR_gold"} 
 param	float	base	1		%meta{string,widget,"number"}  %read{32,2329} %write{2147483647,-1}
 param	color	base_color	0.944000006 0.776000023 0.372999996		%read{32,363} %write{2147483647,-1}

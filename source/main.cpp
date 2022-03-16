@@ -16,14 +16,15 @@
 namespace mx = MaterialX;
 
 
-mx::DocumentPtr LoadStdLib(const mx::FileSearchPath& searchPath) {
+mx::DocumentPtr LoadStdLib(const mx::FileSearchPath &searchPath) {
     /*
      * Load MaterialX data libraries from MaterialX/libraries.
      * searchPath is the absolute path to MaterialX root.
      */
     mx::DocumentPtr stdLib;
-    mx::FilePathVec libraryFolders = { "libraries" };
+    mx::FilePathVec libraryFolders = {"libraries"};
     mx::StringSet xincludeFiles;
+
     try {
         stdLib = mx::createDocument();
         xincludeFiles = mx::loadLibraries(libraryFolders, searchPath, stdLib);
@@ -31,38 +32,31 @@ mx::DocumentPtr LoadStdLib(const mx::FileSearchPath& searchPath) {
             std::cerr << "Could not find standard data libraries on the given search path: " << searchPath.asString()
                       << std::endl;
         }
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception &e) {
         std::cerr << "Failed to load standard data libraries: " << e.what() << std::endl;
         exit(EXIT_FAILURE);
     }
+
     return stdLib;
 }
 
-mx::GenContext InitGenContext(const mx::FileSearchPath& searchPath) {
+mx::GenContext InitGenContext(const mx::FileSearchPath &searchPath) {
     /*
      * Init shadergen context.
      * searchPath is absolute path to MaterialX root.
      */
     mx::GenContext context = mx::GenContext(mx::OslShaderGenerator::create());
-    context.getOptions().targetColorSpaceOverride = "lin_rec709";
-    context.getOptions().fileTextureVerticalFlip = false;
 
-    for (const mx::FilePath& path : searchPath)
-    {
+    for (const mx::FilePath &path: searchPath) {
         context.registerSourceCodeSearchPath(path / "libraries");
     }
 
     return context;
 }
 
-void WriteOslShaderFromDoc(
-        const mx::FilePath& materialFilename,
-        const mx::FilePath& oslFilename,
-        const mx::FileSearchPath& searchPath,
-        mx::GenContext context,
-        const mx::DocumentPtr& stdLib) {
+void WriteOslShaderFromDoc(const mx::FilePath &materialFilename, const mx::FilePath &oslFilename,
+                           const mx::FileSearchPath &searchPath, mx::GenContext context,
+                           const mx::DocumentPtr &stdLib) {
     /*
      * Write an OSL shader from a *.mtlx document.
      * materialFilename is absolute path to *.mtlx document.
@@ -71,11 +65,9 @@ void WriteOslShaderFromDoc(
      * context is a configured shadergen context.
      * stdLib is a document ptr to MaterialX data libraries.
      */
-
     mx::XmlReadOptions readOptions;
-    new mx::XmlReadOptions();
-    try
-    {
+
+    try {
         // Load material document
         mx::DocumentPtr doc = mx::createDocument();
         mx::readFromXmlFile(doc, materialFilename, searchPath, &readOptions);
@@ -85,8 +77,7 @@ void WriteOslShaderFromDoc(
 
         // Validate the document
         std::string message;
-        if (!doc->validate(&message))
-        {
+        if (!doc->validate(&message)) {
             std::cerr << "*** Validation warnings for " << materialFilename.getBaseName() << " ***" << std::endl;
             std::cerr << message;
         }
@@ -94,56 +85,49 @@ void WriteOslShaderFromDoc(
         // Find renderable elements
         std::vector<mx::TypedElementPtr> docElems;
         mx::findRenderableElements(doc, docElems);
-        if (docElems.empty())
-        {
+        if (docElems.empty()) {
             throw mx::Exception("No renderable elements found in " + materialFilename.getBaseName());
         }
         auto docElem = docElems.front();
         mx::TypedElementPtr renderableElem = docElem;
         mx::NodePtr node = docElem->asA<mx::Node>();
-        if (node && node->getType() == mx::MATERIAL_TYPE_STRING)
-        {
+        if (node && node->getType() == mx::MATERIAL_TYPE_STRING) {
             std::vector<mx::NodePtr> shaderNodes = getShaderNodes(node);
-            if (!shaderNodes.empty())
-            {
+            if (!shaderNodes.empty()) {
                 renderableElem = shaderNodes[0];
             }
         }
-
         auto renderablePath = renderableElem->getNamePath();
         mx::ElementPtr elemptr = doc->getDescendant(renderablePath);
         mx::TypedElementPtr typedElem = elemptr ? elemptr->asA<mx::TypedElement>() : nullptr;
 
-        // Write shader
+        // Create shader
         const bool hasTransparency = mx::isTransparentSurface(typedElem, context.getShaderGenerator().getTarget());
         mx::GenContext materialContext = context;
         materialContext.getOptions().hwTransparency = hasTransparency;
         mx::ShaderPtr shader = createShader(typedElem->getNamePath(), materialContext, typedElem);
-        const std::string& pixelShader = shader->getSourceCode(mx::Stage::PIXEL);
+
+        // Write shader
+        const std::string &pixelShader = shader->getSourceCode(mx::Stage::PIXEL);
         std::ofstream file;
         file.open(oslFilename);
         file << pixelShader;
         file.close();
-    }
-    catch (mx::ExceptionRenderError& e)
-    {
-        for (const std::string& error : e.errorLog())
-        {
+    } catch (mx::ExceptionRenderError &e) {
+        for (const std::string &error: e.errorLog()) {
             std::cerr << error << std::endl;
             exit(EXIT_FAILURE);
         }
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception &e) {
         std::cerr << "Failed to load material: " << e.what() << std::endl;
         exit(EXIT_FAILURE);
     }
 }
 
 int main(int argc, char *argv[]) {
-
     if (argc != 4) {
-        std::cerr << "usage: mtlx-to-osl [absolute-path-to-mtlx-file] [absolute-path-to-mtlx-libs] [osl-outfile-name]" << std::endl;
+        std::cerr << "usage: mtlx-to-osl [absolute-path-to-mtlx-file] [absolute-path-to-mtlx-libs] [osl-outfile-name]"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -151,9 +135,7 @@ int main(int argc, char *argv[]) {
     mx::FileSearchPath searchPath(argv[2]);
     mx::FilePath oslFilename = argv[3];
 
-    std::cout << '\n' << materialFilename.asString()
-              << '\n' << oslFilename.asString()
-              << std::endl;
+    std::cout << '\n' << materialFilename.asString() << '\n' << oslFilename.asString() << std::endl;
 
     // Load standard libraries
     mx::DocumentPtr stdLib = LoadStdLib(searchPath);

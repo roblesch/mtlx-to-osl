@@ -10,15 +10,12 @@ endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/MaterialX)
 
-file(GLOB source "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
-file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h*")
-add_executable(mtlx-to-osl ${source} ${headers})
+add_executable(mtlx-to-osl source/main.cpp)
 
 target_link_libraries(
         mtlx-to-osl
         MaterialXCore
         MaterialXFormat
-        MaterialXGenShader
         MaterialXGenOsl
-        MaterialXGenGlsl
+        MaterialXGenShader
         MaterialXRender)
