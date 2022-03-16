@@ -14,4 +14,11 @@ file(GLOB source "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
 file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/source/*.h*")
 add_executable(mtlx-to-osl ${source} ${headers})
 
-target_link_libraries(mtlx-to-osl MaterialXGenOsl)
+target_link_libraries(
+        mtlx-to-osl
+        MaterialXCore
+        MaterialXFormat
+        MaterialXGenShader
+        MaterialXGenOsl
+        MaterialXGenGlsl
+        MaterialXRender)
