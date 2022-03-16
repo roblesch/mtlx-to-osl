@@ -1,4 +1,6 @@
 .DS_Store
+build
+cmake-build-debug
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
